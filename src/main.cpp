@@ -21,6 +21,11 @@ int main(int argc, char* args[])
 
 	SDL_Texture* grassTexture = window.loadTexture("res/gfx/abandoned-mine.png");
 
+    Entity platforms[4] = {Entity(0, 0, grassTexture),
+                            Entity(30, 0, grassTexture),
+                            Entity(30, 30, grassTexture),
+                            Entity(40, 60, grassTexture)};
+
 	bool gameRunning = true;
 
 	SDL_Event event;
@@ -36,7 +41,12 @@ int main(int argc, char* args[])
 		}
 
 		window.clear();
-		window.render(grassTexture);
+
+        for (int i = 0; i < 4; i++)
+        {
+            window.render(platforms[i]);
+        }
+
 		window.display();
 	}
 
