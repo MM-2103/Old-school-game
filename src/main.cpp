@@ -3,8 +3,10 @@
 #include <iostream>
 #include <vector>
 
+#include "Utils.hpp"
 #include "RenderWindow.hpp"
 #include "Entity.hpp"
+#include "Tile.hpp"
 
 int main(int argc, char* args[])
 {
@@ -18,27 +20,22 @@ int main(int argc, char* args[])
 		std::cout << "IMG_init has failed. Error: " << SDL_GetError() << std::endl;
 	}
 
-	RenderWindow window("GAME v1.0", 1280, 720);
+	RenderWindow window("GAME v1.0", 1280, 480);
 
 	SDL_Texture* grassTexture = window.loadTexture("res/gfx/abandoned-mine.png");
+	SDL_Texture* backgroundTexture = window.loadTexture("res/gfx/background.png");
 
-    // Entity platforms[4] = {Entity(0, 0, grassTexture),
-    //                         Entity(30, 0, grassTexture),
-    //                         Entity(30, 30, grassTexture),
-    //                         Entity(40, 60, grassTexture)};
+    std::vector<Tile> platforms = 
+    {
+       	Tile(Vector2f(0, 0), grassTexture),
+	   	Tile(Vector2f(30, 0), grassTexture),
+       	Tile(Vector2f(30, 30), grassTexture),
+       	Tile(Vector2f(40, 60), grassTexture)
+   	};
 
+	{
 
-    std::vector<Entity> platforms = {
-    								Entity(0, 0, grassTexture),
-		                            Entity(30, 0, grassTexture),
-                            		Entity(30, 30, grassTexture),
-                            		Entity(40, 60, grassTexture)
-										};
-
-	{                            		
-
-	    Entity platformB(100, 50, grassTexture);
-
+	    Tile platformB(Vector2f(100, 50), grassTexture);
 	    platforms.push_back(platformB);
 	}
 	
@@ -46,17 +43,38 @@ int main(int argc, char* args[])
 
 	SDL_Event event;
 
+	const float timeStep = 0.01f;
+	float accumulator = 0.0f;
+	float currentTime = utils::hireTimeInSeconds(); 
+
+// Game loop 
 	while (gameRunning)
 	{
-		while (SDL_PollEvent(&event))
+		float newTime = utils::hireTimeInSeconds();
+		float frameTime = newTime - currentTime;
+
+		currentTime = newTime;
+
+		accumulator += frameTime;
+
+		while(accumulator >= timeStep)
 		{
-			if (event.type == SDL_QUIT)
+			while (SDL_PollEvent(&event))
 			{
-				gameRunning = false;
+				if (event.type == SDL_QUIT)
+				{
+					gameRunning = false;
+				}
 			}
+
+			accumulator -= timeStep;
 		}
 
+		// const float alpha = accumulator / timeStep;
+
 		window.clear();
+
+    	window.render(0, 0, backgroundTexture);
 
         for (Entity& e : platforms)
         {
@@ -64,6 +82,8 @@ int main(int argc, char* args[])
         }
 
 		window.display();
+
+		std::cout << utils::hireTimeInSeconds() << std::endl;
 	}
 
 	window.cleanUp();
